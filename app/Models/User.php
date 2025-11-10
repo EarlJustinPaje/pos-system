@@ -1,4 +1,5 @@
 <?php
+// app/Models/User.php (Updated with Branch)
 
 namespace App\Models;
 
@@ -55,6 +56,11 @@ class User extends Authenticatable
     public function auditLogs()
     {
         return $this->hasMany(AuditLog::class);
+    }
+
+    public function systemNotifications()
+    {
+        return $this->hasMany(SystemNotification::class);
     }
 
     // Role & Permission Methods
@@ -124,5 +130,22 @@ class User extends Authenticatable
     public function scopeInBranch($query, $branchId)
     {
         return $query->where('branch_id', $branchId);
+    }
+
+    // Helper methods
+    public function getUnreadNotificationsCount()
+    {
+        return $this->systemNotifications()->unread()->count();
+    }
+
+    public function canAccessBranch($branchId)
+    {
+        // Admin can access all branches
+        if ($this->isAdmin()) {
+            return true;
+        }
+        
+        // Users can only access their assigned branch
+        return $this->branch_id == $branchId;
     }
 }

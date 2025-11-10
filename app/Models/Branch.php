@@ -1,4 +1,5 @@
 <?php
+// app/Models/Branch.php
 
 namespace App\Models;
 
@@ -43,6 +44,16 @@ class Branch extends Model
     public function sales()
     {
         return $this->hasMany(Sale::class);
+    }
+
+    public function categories()
+    {
+        return $this->hasMany(Category::class);
+    }
+
+    public function promotions()
+    {
+        return $this->hasMany(Promotion::class);
     }
 
     public function managers()
@@ -90,7 +101,15 @@ class Branch extends Model
     {
         return $this->products()
             ->where('is_active', true)
-            ->where('quantity', '<=', 10)
+            ->whereColumn('quantity', '<=', 'reorder_point')
+            ->count();
+    }
+
+    public function getExpiredProductsCount()
+    {
+        return $this->products()
+            ->where('is_active', true)
+            ->where('expiration_date', '<', now())
             ->count();
     }
 }

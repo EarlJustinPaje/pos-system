@@ -1,5 +1,5 @@
 <?php
-// app/Models/Sale.php (Updated)
+// app/Models/Sale.php (Complete)
 
 namespace App\Models;
 
@@ -121,4 +121,40 @@ class Sale extends Model
         return $this->saleItems->sum('quantity');
     }
 
-    public function getPayment
+    public function getPaymentMethods()
+    {
+        return $this->paymentTransactions()
+                    ->with('paymentMethod')
+                    ->get()
+                    ->pluck('paymentMethod.name')
+                    ->unique()
+                    ->implode(', ');
+    }
+
+    public function hasMultiplePayments()
+    {
+        return $this->paymentTransactions()->count() > 1;
+    }
+
+    public function getPaymentStatusLabel()
+    {
+        return match($this->payment_status) {
+            'pending' => 'Pending',
+            'completed' => 'Completed',
+            'partial' => 'Partially Paid',
+            'refunded' => 'Refunded',
+            default => 'Unknown',
+        };
+    }
+
+    public function getPaymentStatusBadgeClass()
+    {
+        return match($this->payment_status) {
+            'pending' => 'bg-warning',
+            'completed' => 'bg-success',
+            'partial' => 'bg-info',
+            'refunded' => 'bg-secondary',
+            default => 'bg-secondary',
+        };
+    }
+}
